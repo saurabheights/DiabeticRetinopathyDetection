@@ -6,7 +6,6 @@ from output_writing import write_submission_csv
 from trainer import ModelTrainer
 
 if __name__ == '__main__':
-
     train_dataset_loader, valid_dataset_loader = get_train_valid_loader(data_params['train_path'],
                                                                         data_params['label_path'],
                                                                         random_seed=54321,
@@ -34,5 +33,3 @@ if __name__ == '__main__':
         predictions, image_names = model_trainer.predict_on_test()
 
     write_submission_csv(predictions, image_names, data_params['submission_file'])
-
-
