@@ -18,7 +18,11 @@ training_params = {
 
 model_params = {
     'model': AlexNet,
-    'model_kwargs': {'num_classes': 5}
+    'model_kwargs': {'num_classes': 5},
+    # the device to put the variables on (cpu/gpu)
+    'pytorch_device': 'cpu',
+    # cuda device if gpu
+    'cuda_device': 0,
 }
 
 optimizer_params = {

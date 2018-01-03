@@ -1,3 +1,5 @@
+import torch
+
 from configuration import data_params, data_transforms, training_params, model_params, optimizer_params
 from data_loading import get_train_valid_loader, get_test_loader
 from output_writing import write_submission_csv
@@ -17,11 +19,19 @@ if __name__ == '__main__':
 
     model = model_params['model'](**model_params['model_kwargs'])
 
-    model_trainer = ModelTrainer(model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
-                                 optimizer_args=optimizer_params)
-    model_trainer.train_model(**training_params)
-
-    predictions, image_names = model_trainer.predict_on_test()
+    if model_params['pytorch_device'] == 'gpu':
+        with torch.cuda.device(model_params['cuda_device']):
+            model_trainer = ModelTrainer(model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
+                                         optimizer_args=optimizer_params,
+                                         host_device='gpu')
+            model_trainer.train_model(**training_params)
+            predictions, image_names = model_trainer.predict_on_test()
+    else:
+        model_trainer = ModelTrainer(model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
+                                     optimizer_args=optimizer_params,
+                                     host_device='cpu')
+        model_trainer.train_model(**training_params)
+        predictions, image_names = model_trainer.predict_on_test()
 
     write_submission_csv(predictions, image_names, data_params['submission_file'])
 
