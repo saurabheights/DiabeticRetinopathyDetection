@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import torch
 
 from configuration import data_params, data_transforms, training_params, model_params, optimizer_params
@@ -6,6 +8,18 @@ from output_writing import write_submission_csv
 from trainer import ModelTrainer
 
 if __name__ == '__main__':
+    print('Training params:')
+    print(pprint(training_params))
+
+    print('Model params:')
+    print(pprint(model_params))
+
+    print('Optimizer params:')
+    print(pprint(optimizer_params))
+
+    print('Data transformation params:')
+    print(pprint(data_transforms))
+
     train_dataset_loader, valid_dataset_loader = get_train_valid_loader(data_params['train_path'],
                                                                         data_params['label_path'],
                                                                         random_seed=54321,
