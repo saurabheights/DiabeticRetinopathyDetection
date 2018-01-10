@@ -84,7 +84,7 @@ class ModelTrainer:
             train_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
             print(f'[Epoch {i_epoch}/{num_epochs}] '
-                  f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss] / y.shape[0]:.3f}')
+                  f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss / y.shape[0]:.3f}')
             self.train_qwk_history.append(train_qwk)
 
             running_loss = 0.
