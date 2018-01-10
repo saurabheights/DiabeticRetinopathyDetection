@@ -77,14 +77,14 @@ class ModelTrainer:
 
                 if not log_nth == 0 and (i_batch % log_nth) == 0:
                     print(f'[Iteration {i_batch}/{iter_per_epoch}] '
-                          f'TRAIN loss: {running_loss.data[0] / sum(curr_y.shape[0] for curr_y in all_y):.3f}')
-                self.train_loss_history.append(running_loss.data[0])
+                          f'TRAIN loss: {running_loss / sum(curr_y.shape[0] for curr_y in all_y):.3f}')
+                self.train_loss_history.append(running_loss)
             y = torch.cat(all_y)
             y_pred = torch.cat(all_y_pred)
             train_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
             print(f'[Epoch {i_epoch}/{num_epochs}] '
-                  f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss.data[0] / y.shape[0]:.3f}')
+                  f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss] / y.shape[0]:.3f}')
             self.train_qwk_history.append(train_qwk)
 
             running_loss = 0.
@@ -111,10 +111,10 @@ class ModelTrainer:
             val_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
             print(f'[Epoch {i_epoch}/{num_epochs}] '
-                  f'VAL     QWK: {val_qwk:.3f}; loss: {running_loss.data[0] / y.shape[0]:.3f}')
+                  f'VAL     QWK: {val_qwk:.3f}; loss: {running_loss / y.shape[0]:.3f}')
 
             self.val_qwk_history.append(val_qwk)
-            self.val_loss_history.append(running_loss.data[0])
+            self.val_loss_history.append(running_loss)
 
             if val_qwk > self.best_qwk:
                 self.best_qwk = val_qwk
