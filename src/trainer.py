@@ -52,7 +52,7 @@ class ModelTrainer:
         iter_per_epoch = len(self.train_dataset_loader)
         print("Start training")
         for i_epoch in range(num_epochs):
-            running_loss = Variable(torch.FloatTensor([0]))
+            running_loss = 0.
             all_y = []
             all_y_pred = []
             for i_batch, (x, y) in enumerate(self.train_dataset_loader):
@@ -70,7 +70,7 @@ class ModelTrainer:
                 train_loss.backward()
                 optimizer.step()
 
-                running_loss += train_loss
+                running_loss += train_loss.data[0]
                 _, y_pred = torch.max(outputs.data, 1)
                 all_y.append(y)
                 all_y_pred.append(y_pred)
@@ -87,7 +87,7 @@ class ModelTrainer:
                   f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss.data[0] / y.shape[0]:.3f}')
             self.train_qwk_history.append(train_qwk)
 
-            running_loss = Variable(torch.FloatTensor([0]))
+            running_loss = 0.
             all_y = []
             all_y_pred = []
             for x, y in self.valid_dataset_loader:
@@ -101,7 +101,7 @@ class ModelTrainer:
                 else:
                     val_loss = self.loss_func(outputs, y)
 
-                running_loss += val_loss
+                running_loss += val_loss.data[0]
                 _, y_pred = torch.max(outputs.data, 1)
                 all_y.append(y)
                 all_y_pred.append(y_pred)
