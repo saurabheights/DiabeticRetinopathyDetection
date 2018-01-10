@@ -9,16 +9,13 @@ from trainer import ModelTrainer
 
 if __name__ == '__main__':
     print('Training params:')
-    print(pprint(training_params))
+    pprint(training_params)
 
     print('Model params:')
-    print(pprint(model_params))
+    pprint(model_params)
 
     print('Optimizer params:')
-    print(pprint(optimizer_params))
-
-    print('Data transformation params:')
-    print(pprint(data_transforms))
+    pprint(optimizer_params)
 
     train_dataset_loader, valid_dataset_loader = get_train_valid_loader(data_params['train_path'],
                                                                         data_params['label_path'],
