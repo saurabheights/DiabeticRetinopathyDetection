@@ -138,4 +138,8 @@ class ModelTrainer:
             all_y_pred.append(y_pred)
             all_image_names.append(image_names)
 
-        return torch.cat(all_y_pred).numpy(), list(chain.from_iterable(all_image_names))
+        all_image_names = list(chain.from_iterable(all_image_names))
+        if self.host_device == 'gpu':
+            return torch.cat(all_y_pred).cpu().numpy(), all_image_names
+        else:
+            return torch.cat(all_y_pred).numpy(), all_image_names
