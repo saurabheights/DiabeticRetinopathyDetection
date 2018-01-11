@@ -51,11 +51,15 @@ class ModelTrainer:
             self.model.cuda()
         iter_per_epoch = len(self.train_dataset_loader)
         print("Start training")
+        print("Size of training data: ", str(len(self.train_dataset_loader)))
+        
         for i_epoch in range(num_epochs):
             running_loss = 0.
             all_y = []
-            all_y_pred = []
-            for i_batch, (x, y) in enumerate(self.train_dataset_loader):
+            all_y_pred = []            
+            
+            for i_batch, batch in enumerate(self.train_dataset_loader):
+                x, y = batch
                 x, y = Variable(x), Variable(y)
                 if self.host_device == 'gpu':
                     x, y = x.cuda(), y.cuda()

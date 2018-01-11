@@ -2,7 +2,7 @@ from pprint import pprint
 
 import torch
 
-from configuration import data_params, data_transforms, training_params, model_params, optimizer_params
+from configuration import data_params, train_data_transforms, val_data_transforms, test_data_transforms, training_params, model_params, optimizer_params
 from data_loading import get_train_valid_loader, get_test_loader
 from output_writing import write_submission_csv
 from trainer import ModelTrainer
@@ -21,11 +21,11 @@ if __name__ == '__main__':
                                                                         data_params['label_path'],
                                                                         random_seed=54321,
                                                                         batch_size=data_params['batch_size'],
-                                                                        train_transforms=data_transforms,
-                                                                        valid_transforms=data_transforms)
+                                                                        train_transforms=train_data_transforms,
+                                                                        valid_transforms=val_data_transforms)
     test_dataset_loader = get_test_loader(data_params['test_path'],
                                           batch_size=data_params['batch_size'],
-                                          transforms=data_transforms)
+                                          transforms=test_data_transforms)
 
     model = model_params['model'](**model_params['model_kwargs'])
 
