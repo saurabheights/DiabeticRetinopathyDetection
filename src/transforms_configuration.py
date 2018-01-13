@@ -37,7 +37,7 @@ optimizer_params = {
 train_data_transforms = transforms.Compose([
     transforms.Lambda(lambda x: x.rotate(uniform(0,360), resample=Image.BICUBIC)),  # random rotation 0 to 360
     transforms.Lambda(lambda x: skew_image(x, uniform(-0.2, 0.2), inc_width=True)), # random skew +- 0.2
-    transforms.RandomResizedCrop(250, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
+    transforms.RandomResizedCrop(300, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
     transforms.CenterCrop((224)),
     transforms.ToTensor()
 ])
@@ -46,7 +46,7 @@ train_data_transforms = transforms.Compose([
 val_data_transforms = transforms.Compose([
     transforms.Lambda(lambda x: x.rotate(uniform(0,360), resample=Image.BICUBIC)),  # random rotation 0 to 360
     transforms.Lambda(lambda x: skew_image(x, uniform(-0.2, 0.2), inc_width=True)), # random skew +- 0.2
-    transforms.RandomResizedCrop(250, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
+    transforms.RandomResizedCrop(300, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
     transforms.CenterCrop((224)),
     transforms.ToTensor()
 ])
@@ -54,7 +54,7 @@ val_data_transforms = transforms.Compose([
 # test data transforms (random rotation)
 test_data_transforms = transforms.Compose([
     transforms.Lambda(lambda x: x.rotate(uniform(0,360), resample=Image.BICUBIC)),  # random rotation 0 to 360
-    transforms.RandomResizedCrop(250, scale=(1,1), ratio=(1,1)),                    # resize to 300
+    transforms.RandomResizedCrop(300, scale=(1,1), ratio=(1,1)),                    # resize to 300
     transforms.CenterCrop((224)), 
     transforms.ToTensor()
 ])
