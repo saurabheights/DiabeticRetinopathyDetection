@@ -8,16 +8,16 @@ from PIL import Image
 from math import tan
 
 data_params = {
-    'train_path': '../data/sample_300',
+    'train_path': '../data/small_train_300',
     'test_path': '../data/test',
     'label_path': '../data/trainLabels.csv',
-    'batch_size': 1,
+    'batch_size': 5,
     'submission_file': '../data/submission.csv'
 }
 
 training_params = {
-    'num_epochs': 20,
-    'log_nth': 1
+    'num_epochs': 50,
+    'log_nth': 5
 }
 
 model_params = {
@@ -30,32 +30,32 @@ model_params = {
 }
 
 optimizer_params = {
-    'lr': 1e-3
+    'lr': 1e-4
 }
 
 # training data transforms (random rotation, random skew, scale and crop 224)
 train_data_transforms = transforms.Compose([
-    transforms.Lambda(lambda x: x.rotate(uniform(0,360))),
-    transforms.Lambda(lambda x: skew_image(x, uniform(-0.2, 0.2), inc_width=True)),
-    transforms.Scale(224),
-    transforms.RandomSizedCrop(224),
+    transforms.Lambda(lambda x: x.rotate(uniform(0,360), resample=Image.BICUBIC)),  # random rotation 0 to 360
+    transforms.Lambda(lambda x: skew_image(x, uniform(-0.2, 0.2), inc_width=True)), # random skew +- 0.2
+    transforms.RandomResizedCrop(250, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
+    transforms.CenterCrop((224)),
     transforms.ToTensor()
 ])
 
 # validation data transforms (random rotation, random skew, scale and crop 224)
 val_data_transforms = transforms.Compose([
-    transforms.Lambda(lambda x: x.rotate(uniform(0,360))),
-    transforms.Lambda(lambda x: skew_image(x, uniform(-0.2, 0.2), inc_width=True)),
-    transforms.Scale(224),
-    transforms.RandomSizedCrop(224),
+    transforms.Lambda(lambda x: x.rotate(uniform(0,360), resample=Image.BICUBIC)),  # random rotation 0 to 360
+    transforms.Lambda(lambda x: skew_image(x, uniform(-0.2, 0.2), inc_width=True)), # random skew +- 0.2
+    transforms.RandomResizedCrop(250, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
+    transforms.CenterCrop((224)),
     transforms.ToTensor()
 ])
 
 # test data transforms (random rotation)
 test_data_transforms = transforms.Compose([
-    transforms.Lambda(lambda x: x.rotate(uniform(0,360))),
-    transforms.Scale(224),
-    transforms.RandomSizedCrop(224),
+    transforms.Lambda(lambda x: x.rotate(uniform(0,360), resample=Image.BICUBIC)),  # random rotation 0 to 360
+    transforms.RandomResizedCrop(250, scale=(1,1), ratio=(1,1)),                    # resize to 300
+    transforms.CenterCrop((224)), 
     transforms.ToTensor()
 ])
 
