@@ -51,7 +51,7 @@ class ModelTrainer:
             self.model.cuda()
         iter_per_epoch = len(self.train_dataset_loader)
         print("Start training")
-        print("Size of training data: ", str(len(self.train_dataset_loader)))
+        print(f"Size of training data: {len(self.train_dataset_loader.dataset)}")
         
         for i_epoch in range(num_epochs):
             running_loss = 0.
