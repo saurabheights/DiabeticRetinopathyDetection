@@ -1,5 +1,6 @@
 from copy import deepcopy
 from itertools import chain
+from pathlib import Path
 
 import torch
 from torch.autograd import Variable
@@ -14,6 +15,7 @@ class ModelTrainer:
                          "weight_decay": 0.0}
 
     def __init__(self, model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
+                 model_path,
                  host_device='cpu',
                  optimizer=torch.optim.Adam, optimizer_args={},
                  loss_func=torch.nn.CrossEntropyLoss(size_average=False),
@@ -22,6 +24,8 @@ class ModelTrainer:
         self.train_dataset_loader = train_dataset_loader
         self.valid_dataset_loader = valid_dataset_loader
         self.test_dataset_loader = test_dataset_loader
+        self.model_path = Path(model_path)
+        self.model_path.parent.mkdir(exist_ok=True)
 
         self.host_device = host_device
         self.optimizer_args = optimizer_args
@@ -31,7 +35,7 @@ class ModelTrainer:
         self._reset_histories()
         self.patience = patience
         self.wait = 0
-        self.best_qwk = 0
+        self.best_qwk = -1
         self.best_model = None
 
     def _reset_histories(self):
@@ -54,6 +58,7 @@ class ModelTrainer:
         print(f"Size of training data: {len(self.train_dataset_loader.dataset)}")
         
         for i_epoch in range(num_epochs):
+            print("Starting new epoch...")
             running_loss = 0.
             all_y = []
             all_y_pred = []            
@@ -121,9 +126,13 @@ class ModelTrainer:
             self.val_loss_history.append(running_loss)
 
             if val_qwk > self.best_qwk:
+                print(f'New best validation QWK score: {val_qwk}')
                 self.best_qwk = val_qwk
                 self.best_model = deepcopy(self.model)
                 self.wait = 0
+                print('Storing best model...')
+                torch.save(self.best_model, self.model_path)
+                print('Done storing')
             else:
                 self.wait += 1
                 if self.wait >= self.patience:

@@ -31,20 +31,28 @@ if __name__ == '__main__':
                                           batch_size=data_params['batch_size'],
                                           transforms=test_data_transforms)
 
-    model = model_params['model'](**model_params['model_kwargs'])
+    if model_params['train']:
+        model = model_params['model'](**model_params['model_kwargs'])
+    else:
+        model = torch.load(data_params['model_path'])
 
     if model_params['pytorch_device'] == 'gpu':
         with torch.cuda.device(model_params['cuda_device']):
             model_trainer = ModelTrainer(model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
+                                         model_params['model_path'],
                                          optimizer_args=optimizer_params,
                                          host_device='gpu')
-            model_trainer.train_model(**training_params)
+            if model_params['train']:
+                model_trainer.train_model(**training_params)
             predictions, image_names = model_trainer.predict_on_test()
+
     else:
         model_trainer = ModelTrainer(model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
+                                     model_params['model_path'],
                                      optimizer_args=optimizer_params,
                                      host_device='cpu')
-        model_trainer.train_model(**training_params)
+        if model_params['train']:
+            model_trainer.train_model(**training_params)
         predictions, image_names = model_trainer.predict_on_test()
 
     write_submission_csv(predictions, image_names, data_params['submission_file'])
