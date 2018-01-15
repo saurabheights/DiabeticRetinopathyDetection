@@ -55,7 +55,7 @@ class ModelTrainer:
             self.model.cuda()
         iter_per_epoch = len(self.train_dataset_loader)
         print("Start training")
-        print(f"Size of training data: {len(self.train_dataset_loader.dataset)}")
+        print(f"Size of training data: {len(self.train_dataset_loader.sampler)}")
         
         for i_epoch in range(num_epochs):
             print("Starting new epoch...")
