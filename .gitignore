@@ -105,3 +105,4 @@ configuration.py
 submission.csv
 data/test_small
 data/train_small
+models
