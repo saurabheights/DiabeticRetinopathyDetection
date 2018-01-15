@@ -8,7 +8,8 @@ data_params = {
     'test_path': '../data/test',
     'label_path': '../data/trainLabels.csv',
     'batch_size': 100,
-    'submission_file': '../data/submission.csv'
+    'submission_file': '../data/submission.csv',
+    'rebalance_train_data': True
 }
 
 training_params = {

@@ -11,6 +11,9 @@ if __name__ == '__main__':
     print('Training params:')
     pprint(training_params)
 
+    print("Data params:")
+    pprint(data_params)
+
     print('Model params:')
     pprint(model_params)
 
@@ -21,6 +24,7 @@ if __name__ == '__main__':
                                                                         data_params['label_path'],
                                                                         random_seed=54321,
                                                                         batch_size=data_params['batch_size'],
+                                                                        rebalance_strategy=data_params['rebalance_strategy'],
                                                                         train_transforms=train_data_transforms,
                                                                         valid_transforms=val_data_transforms)
     test_dataset_loader = get_test_loader(data_params['test_path'],
