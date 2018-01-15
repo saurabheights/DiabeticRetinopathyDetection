@@ -16,7 +16,8 @@ data_params = {
     # 'even', 'posneg', None.
     # 'even': Same number of samples for each class
     # 'posneg': Same number of samples for class 0 and all other classes
-    'rebalance_strategy': 'even'
+    'rebalance_strategy': 'even',
+    'num_loading_workers': 4
 }
 
 training_params = {

@@ -26,7 +26,8 @@ if __name__ == '__main__':
                                                                         batch_size=data_params['batch_size'],
                                                                         rebalance_strategy=data_params['rebalance_strategy'],
                                                                         train_transforms=train_data_transforms,
-                                                                        valid_transforms=val_data_transforms)
+                                                                        valid_transforms=val_data_transforms,
+                                                                        num_workers=data_params['num_loading_workers'])
     test_dataset_loader = get_test_loader(data_params['test_path'],
                                           batch_size=data_params['batch_size'],
                                           transforms=test_data_transforms)
