@@ -12,6 +12,4 @@ conda install -y -c anaconda pandas=0.22.0
 conda install -y pytorch=0.3.0 torchvision=0.2.0 -c pytorch
 conda install -y opencv=3.3.1
 conda install -y -c anaconda jupyter 
-
-
-
+conda install -y -c conda-forge matplotlib
