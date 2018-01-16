@@ -2,7 +2,8 @@ from pprint import pprint
 
 import torch
 
-from configuration import data_params, train_data_transforms, val_data_transforms, test_data_transforms, training_params, model_params, optimizer_params
+from configuration import data_params, train_data_transforms, val_data_transforms, test_data_transforms, \
+    training_params, model_params, optimizer_params
 from data_loading import get_train_valid_loader, get_test_loader
 from output_writing import write_submission_csv
 from trainer import ModelTrainer
@@ -30,7 +31,8 @@ if __name__ == '__main__':
                                                                         num_workers=data_params['num_loading_workers'])
     test_dataset_loader = get_test_loader(data_params['test_path'],
                                           batch_size=data_params['batch_size'],
-                                          transforms=test_data_transforms)
+                                          transforms=test_data_transforms,
+                                          num_workers=data_params['num_loading_workers'])
 
     if model_params['train']:
         model = model_params['model'](**model_params['model_kwargs'])
