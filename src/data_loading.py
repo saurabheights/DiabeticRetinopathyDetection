@@ -15,8 +15,11 @@ class RetinopathyDataset(Dataset):
         self.image_names = list(self.root_dir.glob('*.jpeg'))
         self.transform = transform
         if csv_file:
+            image_name_set = {i.stem for i in self.image_names}
             labels = pd.read_csv(csv_file)
-            self.labels = dict(zip(list(labels.image), list(labels.level)))
+            self.labels = {image: label for image, label in
+                           zip(list(labels.image), list(labels.level))
+                           if image in image_name_set}
         else:
             self.labels = None
         self.loader = loader
@@ -37,6 +40,69 @@ class RetinopathyDataset(Dataset):
             return image, image_path.stem
 
 
+class LabelBalancer:
+    def __init__(self, y):
+        self.y = np.asarray(list(y))
+
+    def _try_frac(self, m, n, pn):
+        # Return (a, b) s.t. a <= m, b <= n
+        # and b / a is as close to pn as possible
+        r = int(round(float(pn * m) / (1.0 - pn)))
+        s = int(round(float((1.0 - pn) * n) / pn))
+        return (m, r) if r <= n else ((s, n) if s <= m else (m, n))
+
+    def _get_counts(self, nneg, npos, frac_pos):
+        if frac_pos > 0.5:
+            return self._try_frac(nneg, npos, frac_pos)
+        else:
+            return self._try_frac(npos, nneg, 1.0 - frac_pos)[::-1]
+
+    def _get_row_counts(self, num_classes):
+        row_pos = []
+        row_n = []
+        for i in range(num_classes):
+            curr_column_pos = np.where(self.y == i)[0]
+            if len(curr_column_pos) == 0:
+                raise ValueError(f"No positive labels for row {i}.")
+            row_pos.append(curr_column_pos)
+            row_n.append(len(curr_column_pos))
+            print(f'Found {len(curr_column_pos)} samples for category {i}')
+        return row_pos, row_n
+    def rebalance_categorical_train_idxs_pos_neg(self, rebalance=0.5, num_classes=5, rand_state=None):
+        """Get training indices based on @y
+            @rebalance: bool or fraction of positive examples desired
+                        If True, default fraction is 0.5. If False no balancing.
+        """
+        rs = np.random if rand_state is None else rand_state
+        row_pos, row_n = self._get_row_counts(num_classes)
+        n_neg = row_n[0]
+        n_pos = sum(row_n[1:])
+        p = 0.5 if rebalance is True else rebalance
+        n_neg, n_pos = self._get_counts(n_neg, n_pos, p)
+        row_pos[0] = rs.choice(row_pos[0], size=n_neg, replace=False)
+        for i in range(1, len(row_pos)):
+            row_pos[i] = rs.choice(row_pos[i],
+                                   size=min(int(n_pos / (num_classes - 1)), row_n[i]),
+                                   replace=False)
+        idxs = np.concatenate(row_pos)
+        rs.shuffle(idxs)
+        return list(idxs)
+
+    def rebalance_categorical_train_idxs_evenly(self, num_classes=5, rand_state=None):
+        """Get training indices based on @y
+            @rebalance: bool or fraction of positive examples desired
+                        If True, default fraction is 0.5. If False no balancing.
+        """
+        rs = np.random if rand_state is None else rand_state
+        row_pos, row_n = self._get_row_counts(num_classes)
+        min_n = min(row_n)
+        for i in range(num_classes):
+            row_pos[i] = rs.choice(row_pos[i], size=min_n, replace=False)
+        idxs = np.concatenate(row_pos)
+        rs.shuffle(idxs)
+        return idxs
+
+
 # customization of https://gist.github.com/kevinzakka/d33bf8d6c7f06a9d8c76d97a7879f5cb
 def get_train_valid_loader(data_dir,
                            label_path,
@@ -44,6 +110,7 @@ def get_train_valid_loader(data_dir,
                            train_transforms,
                            valid_transforms,
                            random_seed,
+                           rebalance_strategy,
                            valid_size=0.1,
                            shuffle=True,
                            num_workers=4,
@@ -90,6 +157,17 @@ def get_train_valid_loader(data_dir,
         np.random.shuffle(indices)
 
     train_idx, valid_idx = indices[split:], indices[:split]
+
+    if rebalance_strategy in {'even', 'posneg'}:
+        label_balancer = LabelBalancer(train_dataset.labels.values())
+        print(f'Train samples before rebalancing: {len(train_idx)}')
+        if rebalance_strategy == 'even':
+            train_idx = label_balancer.rebalance_categorical_train_idxs_evenly()
+        else:
+            train_idx = label_balancer.rebalance_categorical_train_idxs_pos_neg()
+        print(f'Train samples after rebalancing: {len(train_idx)}')
+    elif rebalance_strategy is not None:
+        print('Could not recognize rebalance_strategy. Not rebalancing')
 
     train_sampler = SubsetRandomSampler(train_idx)
     valid_sampler = SubsetRandomSampler(valid_idx)
