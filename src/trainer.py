@@ -2,6 +2,7 @@ from copy import deepcopy
 from itertools import chain
 from pathlib import Path
 
+import progressbar
 import torch
 from torch.autograd import Variable
 
@@ -142,6 +143,10 @@ class ModelTrainer:
     def predict_on_test(self):
         all_y_pred = []
         all_image_names = []
+        print(f'num_test_images={len(self.test_dataset_loader)}')
+        image_index = 0
+        bar = progressbar.ProgressBar(max_value=len(self.test_dataset_loader))
+        bar.start(init=True)
         for x, image_names in self.test_dataset_loader:
             x = Variable(x)
             if self.host_device == 'gpu':
@@ -150,6 +155,9 @@ class ModelTrainer:
             _, y_pred = torch.max(outputs.data, 1)
             all_y_pred.append(y_pred)
             all_image_names.append(image_names)
+            image_index += 1
+            bar.update(image_index)
+        bar.finish()
 
         all_image_names = list(chain.from_iterable(all_image_names))
         if self.host_device == 'gpu':
