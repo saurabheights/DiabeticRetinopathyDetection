@@ -96,7 +96,7 @@ class ModelTrainer:
             y_pred = torch.cat(all_y_pred)
             train_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
-            logging.info(f'[Epoch {i_epoch}/{num_epochs}] '
+            logging.info(f'[Epoch {i_epoch+1}/{num_epochs}] '
                   f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss / y.shape[0]:.3f}')
             self.train_qwk_history.append(train_qwk)
 
@@ -123,13 +123,13 @@ class ModelTrainer:
             y_pred = torch.cat(all_y_pred)
             val_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
-            logging.info(f'[Epoch {i_epoch}/{num_epochs}] '
+            logging.info(f'[Epoch {i_epoch+1}/{num_epochs}] '
                   f'VAL     QWK: {val_qwk:.3f}; loss: {running_loss / y.shape[0]:.3f}')
 
             self.val_qwk_history.append(val_qwk)
             self.val_loss_history.append(running_loss)
             training_time = time.process_time() - training_start_time
-            logging.info(f"Epoch {i_epoch} - Training Time - {training_time} seconds")
+            logging.info(f"Epoch {i_epoch+1} - Training Time - {training_time} seconds")
 
             if val_qwk > self.best_qwk:
                 logging.info(f'New best validation QWK score: {val_qwk}')
