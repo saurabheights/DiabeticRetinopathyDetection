@@ -36,13 +36,14 @@ mkdir -p data/full
 cd data/full
 KAGGLE_USERNAME=$1
 KAGGLE_PASSWORD=$2
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.001
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.002
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.003
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.004
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.005
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.006
-kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection -f test.zip.007
+kg download -u ${KAGGLE_USERNAME} -p ${KAGGLE_PASSWORD} -c diabetic-retinopathy-detection
 7z x test.zip.001
 rm test.zip.00*
-echo "Test dataset downloaded and decompressed."
+7z x train.zip.001
+rm train.zip.00*
+unzip trainLabels.csv.zip
+
+echo "Dataset downloaded and decompressed."
+
+# Step 4- run preprocessing on both train and test dataset.
+echo "Run src/preprocess.py over train and test folder paths with scale as 300 and dont forget to thank Omar :D."
