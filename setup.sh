@@ -4,19 +4,8 @@ if [ "$#" -ne 2 ]; then
     echo "Illegal number of parameters. Usage:- bash setup.sh <KAGGLE_USERNAME> <KAGGLE_PASSWORD>"
 fi
 
-# Step - 1 - a - Install Nvidia Drivers
-sudo add-apt-repository ppa:graphics-drivers/ppa
-sudo apt update
-sudo apt-get install nvidia-390
-nvidia-smi
-echo "Check output of nvidia-smi"
-sudo reboot
-
-# Step - 1 - b - Install Cuda
-curl -O http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
-sudo dpkg -i ./cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
-sudo apt-get update
-sudo apt-get -y install cuda
+# Step - 1 - a - Install Nvidia Drivers and cuda.
+sudo apt install nvidia-cuda-toolkit
 echo "After reboot, run nvidia-smi. There should be no driver/library version mismatch."
 sudo reboot
 
