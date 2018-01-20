@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -66,7 +67,7 @@ class LabelBalancer:
                 raise ValueError(f"No positive labels for row {i}.")
             row_pos.append(curr_column_pos)
             row_n.append(len(curr_column_pos))
-            print(f'Found {len(curr_column_pos)} samples for category {i}')
+            logging.info(f'Found {len(curr_column_pos)} samples for category {i}')
         return row_pos, row_n
     def rebalance_categorical_train_idxs_pos_neg(self, rebalance=0.5, num_classes=5, rand_state=None):
         """Get training indices based on @y
@@ -160,14 +161,14 @@ def get_train_valid_loader(data_dir,
 
     if rebalance_strategy in {'even', 'posneg'}:
         label_balancer = LabelBalancer(train_dataset.labels.values())
-        print(f'Train samples before rebalancing: {len(train_idx)}')
+        logging.info(f'Train samples before rebalancing: {len(train_idx)}')
         if rebalance_strategy == 'even':
             train_idx = label_balancer.rebalance_categorical_train_idxs_evenly()
         else:
             train_idx = label_balancer.rebalance_categorical_train_idxs_pos_neg()
-        print(f'Train samples after rebalancing: {len(train_idx)}')
+        logging.info(f'Train samples after rebalancing: {len(train_idx)}')
     elif rebalance_strategy is not None:
-        print('Could not recognize rebalance_strategy. Not rebalancing')
+        logging.info('Could not recognize rebalance_strategy. Not rebalancing')
 
     train_sampler = SubsetRandomSampler(train_idx)
     valid_sampler = SubsetRandomSampler(valid_idx)
