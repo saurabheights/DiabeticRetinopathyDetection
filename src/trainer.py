@@ -51,7 +51,7 @@ class ModelTrainer:
         self.val_qwk_history = []
 
     def train_model(self, num_epochs, log_nth):
-        training_start_time = time.process_time()
+        training_start_time = time.time()
         optimizer = self.optimizer(self.model.parameters(), **self.optimizer_args)
         self._reset_histories()
         if self.host_device == 'gpu':
@@ -128,7 +128,7 @@ class ModelTrainer:
 
             self.val_qwk_history.append(val_qwk)
             self.val_loss_history.append(running_loss)
-            training_time = time.process_time() - training_start_time
+            training_time = time.time() - training_start_time
             logging.info(f"Epoch {i_epoch+1} - Training Time - {training_time} seconds")
 
             if val_qwk > self.best_qwk:
@@ -145,11 +145,11 @@ class ModelTrainer:
                     logging.info('Stopped after epoch %d' % (i_epoch))
                     break
 
-        training_time = time.process_time() - training_start_time
+        training_time = time.time() - training_start_time
         logging.info(f"Full Training Time - {training_time} seconds")
 
     def predict_on_test(self):
-        testing_start_time = time.process_time()
+        testing_start_time = time.time()
         all_y_pred = []
         all_image_names = []
         logging.info(f'num_test_images_batch={len(self.test_dataset_loader)}')
@@ -169,7 +169,7 @@ class ModelTrainer:
         bar.finish()
 
         all_image_names = list(chain.from_iterable(all_image_names))
-        testing_time = time.process_time() - testing_start_time
+        testing_time = time.time() - testing_start_time
         logging.info(f"Full Testing Time - {testing_time} seconds for "
                      f"{len(self.test_dataset_loader) * self.test_dataset_loader.batch_size} Images")
         if self.host_device == 'gpu':
