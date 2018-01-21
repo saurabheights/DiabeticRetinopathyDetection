@@ -1,6 +1,6 @@
 # Partially adopted from https://github.com/btgraham/SparseConvNet/blob/kaggle_Diabetic_Retinopathy_competition/Data/kaggleDiabeticRetinopathy/preprocessImages.py
 
-import cv2, glob
+import cv2
 import numpy as np
 from os.path import join, exists
 from os import listdir, makedirs

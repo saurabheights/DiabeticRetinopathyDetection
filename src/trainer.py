@@ -2,8 +2,11 @@ from copy import deepcopy
 from itertools import chain
 from pathlib import Path
 
+import progressbar
 import torch
 from torch.autograd import Variable
+import time
+import logging
 
 from quadratic_weighted_kappa import quadratic_weighted_kappa
 
@@ -48,17 +51,18 @@ class ModelTrainer:
         self.val_qwk_history = []
 
     def train_model(self, num_epochs, log_nth):
-
+        training_start_time = time.time()
         optimizer = self.optimizer(self.model.parameters(), **self.optimizer_args)
         self._reset_histories()
         if self.host_device == 'gpu':
             self.model.cuda()
         iter_per_epoch = len(self.train_dataset_loader)
-        print("Start training")
-        print(f"Size of training data: {len(self.train_dataset_loader.sampler)}")
+        logging.info("Start training")
+        logging.info(f"Size of training data: "
+                     f"{len(self.train_dataset_loader.sampler) * self.train_dataset_loader.batch_size}")
         
         for i_epoch in range(num_epochs):
-            print("Starting new epoch...")
+            logging.info("Starting new epoch...")
             running_loss = 0.
             all_y = []
             all_y_pred = []            
@@ -85,14 +89,14 @@ class ModelTrainer:
                 all_y_pred.append(y_pred)
 
                 if not log_nth == 0 and (i_batch % log_nth) == 0:
-                    print(f'[Iteration {i_batch}/{iter_per_epoch}] '
+                    logging.info(f'[Iteration {i_batch}/{iter_per_epoch}] '
                           f'TRAIN loss: {running_loss / sum(curr_y.shape[0] for curr_y in all_y):.3f}')
                 self.train_loss_history.append(running_loss)
             y = torch.cat(all_y)
             y_pred = torch.cat(all_y_pred)
             train_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
-            print(f'[Epoch {i_epoch}/{num_epochs}] '
+            logging.info(f'[Epoch {i_epoch+1}/{num_epochs}] '
                   f'TRAIN   QWK: {train_qwk:.3f}; loss: {running_loss / y.shape[0]:.3f}')
             self.train_qwk_history.append(train_qwk)
 
@@ -119,29 +123,39 @@ class ModelTrainer:
             y_pred = torch.cat(all_y_pred)
             val_qwk = quadratic_weighted_kappa(y_pred, y.data)
 
-            print(f'[Epoch {i_epoch}/{num_epochs}] '
+            logging.info(f'[Epoch {i_epoch+1}/{num_epochs}] '
                   f'VAL     QWK: {val_qwk:.3f}; loss: {running_loss / y.shape[0]:.3f}')
 
             self.val_qwk_history.append(val_qwk)
             self.val_loss_history.append(running_loss)
+            training_time = time.time() - training_start_time
+            logging.info(f"Epoch {i_epoch+1} - Training Time - {training_time} seconds")
 
             if val_qwk > self.best_qwk:
-                print(f'New best validation QWK score: {val_qwk}')
+                logging.info(f'New best validation QWK score: {val_qwk}')
                 self.best_qwk = val_qwk
                 self.best_model = deepcopy(self.model)
                 self.wait = 0
-                print('Storing best model...')
+                logging.info('Storing best model...')
                 torch.save(self.best_model, self.model_path)
-                print('Done storing')
+                logging.info('Done storing')
             else:
                 self.wait += 1
                 if self.wait >= self.patience:
-                    print('Stopped after epoch %d' % (i_epoch))
+                    logging.info('Stopped after epoch %d' % (i_epoch))
                     break
 
+        training_time = time.time() - training_start_time
+        logging.info(f"Full Training Time - {training_time} seconds")
+
     def predict_on_test(self):
+        testing_start_time = time.time()
         all_y_pred = []
         all_image_names = []
+        logging.info(f'num_test_images_batch={len(self.test_dataset_loader)}')
+        image_index = 0
+        bar = progressbar.ProgressBar(max_value=len(self.test_dataset_loader))
+        bar.start(init=True)
         for x, image_names in self.test_dataset_loader:
             x = Variable(x)
             if self.host_device == 'gpu':
@@ -150,8 +164,14 @@ class ModelTrainer:
             _, y_pred = torch.max(outputs.data, 1)
             all_y_pred.append(y_pred)
             all_image_names.append(image_names)
+            image_index += 1
+            bar.update(image_index)
+        bar.finish()
 
         all_image_names = list(chain.from_iterable(all_image_names))
+        testing_time = time.time() - testing_start_time
+        logging.info(f"Full Testing Time - {testing_time} seconds for "
+                     f"{len(self.test_dataset_loader) * self.test_dataset_loader.batch_size} Images")
         if self.host_device == 'gpu':
             return torch.cat(all_y_pred).cpu().numpy(), all_image_names
         else:
