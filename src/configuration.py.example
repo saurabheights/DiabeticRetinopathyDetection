@@ -28,6 +28,8 @@ training_params = {
 model_params = {
     # if False, just load the model from the disk and evaluate
     'train': True,
+    # if False, previously (partially) trained model is further trained.
+    'train_from_scratch':True,
     'model_path': '../models/alexnet.model',
     'model': AlexNet,
     'model_kwargs': {'num_classes': 5},

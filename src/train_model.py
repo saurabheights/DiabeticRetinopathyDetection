@@ -43,7 +43,7 @@ if __name__ == '__main__':
                                           num_workers=data_params['num_loading_workers'],
                                           pin_memory=False)
 
-    if model_params['train']:
+    if model_params['train'] and model_params['train_from_scratch']:
         model = model_params['model'](**model_params['model_kwargs'])
     else:
         model = torch.load(model_params['model_path'])
