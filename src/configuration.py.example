@@ -20,6 +20,16 @@ data_params = {
     'num_loading_workers': 4
 }
 
+kaggle_params = {
+    # Change auto submit to True, to submit from code.
+    'auto_submit':False,
+    # Change to your Kaggle username and password.
+    'kaggle_username':'abc',
+    'kaggle_password':'xyz',
+    # Keep message enclosed in single qoutes, which are further enclosed in double qoutes.
+    'kaggle_submission_message':"'Luke, I am you father'"
+}
+
 training_params = {
     'num_epochs': 1,
     'log_nth': 1

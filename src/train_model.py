@@ -4,10 +4,11 @@ import torch
 import logging
 import pprint
 from configuration import data_params, train_data_transforms, val_data_transforms, test_data_transforms, \
-    training_params, model_params, optimizer_params
+    training_params, model_params, optimizer_params, kaggle_params
 from data_loading import get_train_valid_loader, get_test_loader
 from output_writing import write_submission_csv
 from trainer import ModelTrainer
+from kaggle import submit_solution
 
 if __name__ == '__main__':
     # Check mode and model for logging file name
@@ -68,4 +69,7 @@ if __name__ == '__main__':
         predictions, image_names = model_trainer.predict_on_test()
 
     write_submission_csv(predictions, image_names, data_params['submission_file'])
+    if kaggle_params['auto_submit'] :
+        output = submit_solution(data_params['submission_file'])
+        logging.info(f"Kaggle submission output = {output}")
     logging.info('Finished.')
