@@ -47,7 +47,10 @@ if __name__ == '__main__':
     if model_params['train'] and model_params['train_from_scratch']:
         model = model_params['model'](**model_params['model_kwargs'])
     else:
-        model = torch.load(model_params['model_path'])
+        if model_params['pytorch_device'] == 'gpu':
+            model = torch.load(model_params['model_path'])
+        else:
+            model = torch.load(model_params['model_path'], lambda storage, loc: storage)
 
     if model_params['pytorch_device'] == 'gpu':
         with torch.cuda.device(model_params['cuda_device']):
