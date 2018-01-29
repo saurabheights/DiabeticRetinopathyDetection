@@ -52,7 +52,12 @@ class ModelTrainer:
 
     def train_model(self, num_epochs, log_nth):
         training_start_time = time.time()
-        optimizer = self.optimizer(self.model.parameters(), **self.optimizer_args)
+        
+        # Pass only the trainable parameters to the optimizer, otherwise pyTorch throws an error
+        # relevant to Transfer learning with fixed features
+        
+        optimizer = self.optimizer(filter(lambda p: p.requires_grad, self.model.parameters()), **self.optimizer_args)
+        
         self._reset_histories()
         if self.host_device == 'gpu':
             self.model.cuda()
