@@ -7,15 +7,14 @@ from random import uniform
 from PIL import Image
 from torchvision import transforms
 import torch.nn as nn
-from TLNet import TLNet
-from torchvision.models import AlexNet
+from DRNet import DRNet
 
 
 data_params = {
-    'train_path': '../data/train',
+    'train_path': '../data/train_300',
     'test_path': '../data/test',
     'label_path': '../data/trainLabels.csv',
-    'batch_size': 16,
+    'batch_size': 32,
     'submission_file': '../data/submission.csv',
     # 'even', 'posneg', None.
     # 'even': Same number of samples for each class
@@ -35,7 +34,7 @@ kaggle_params = {
 }
 
 training_params = {
-    'num_epochs': 5,
+    'num_epochs': 25,
     'log_nth': 25
 }
 
@@ -43,20 +42,16 @@ model_params = {
     # if False, just load the model from the disk and evaluate
     'train': True,
     # if False, previously (partially) trained model is further trained.
-    'train_from_scratch':True,
-    'transfer_learning': True,
-    'model_path': '../models/TLNet_5e_RN50_1e4.model',
-    'model': TLNet,
+    'train_from_scratch':False,
+    'model_path': '../models/DRNet_Test_18.model',
+    'model': DRNet,
     'model_kwargs' : {
         'num_classes' : 5,
+        'pretrained' : True,       # load pre-trained weights on image-net
+        'net_size' : 18,            # 18, 34, or 50
+        'freeze_features' : False,  # fixed feature extractor OR fine-tune
+        'freeze_until_layer' : 2    # if (freeze features) --> 1, 2, 3, 4, or 5 (check ResNet Paper)
     },
-    
-    'transfer_learning_kwargs' : {
-        'pretrained' : True,
-        'net_size' : 50,
-        'freeze_features' : True,
-        'freeze_until_layer' : 1
-     },
     # the device to put the variables on (cpu/gpu)
     'pytorch_device': 'gpu',
     # cuda device if gpu
@@ -64,7 +59,7 @@ model_params = {
 }
 
 optimizer_params = {
-    'lr': 5e-5
+    'lr': 1e-4
 }
 
 # normalization recommended by PyTorch documentation

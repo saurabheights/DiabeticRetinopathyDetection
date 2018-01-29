@@ -45,12 +45,7 @@ if __name__ == '__main__':
                                           pin_memory=False)
 
     if model_params['train'] and model_params['train_from_scratch']:
-        
-        # if transfer learning mode, pass transfer learning parameters to model constructor
-        if model_params['transfer_learning']:
-            model = model_params['model'](**model_params['model_kwargs'], **model_params['transfer_learning_kwargs'])
-        else:
-            model = model_params['model'](**model_params['model_kwargs'])
+        model = model_params['model'](**model_params['model_kwargs'])
     else:
         if model_params['pytorch_device'] == 'gpu':
             model = torch.load(model_params['model_path'])

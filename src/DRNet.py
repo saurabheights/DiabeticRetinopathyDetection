@@ -1,14 +1,14 @@
 from torchvision.models import resnet18, resnet34, resnet50
 import torch.nn as nn
 
-class TLNet(nn.Module):
+class DRNet(nn.Module):
     
     '''
     Class to create a ResNet Model for transfer learning.
     
     Arguments:
     num_classes: number of output target classes, default is 5
-    pretrained: boolean to determine whether to retrieve pretrained weights 'image-net', defaults to TRUE
+    pretrained: boolean to determine whether to retrieve pretrained weights 'image-net', defaults to FALSE
     net_size: choose which ResNet architecture, can be 18, 34, 50, otherwise defaults to 50
     freeze_features: boolean to determine whether to freeze some layers or not, defaults to FALSE
     freeze_until_layer: integer to determine number of layers to freeze starting from the beginning of the network. 
@@ -18,9 +18,9 @@ class TLNet(nn.Module):
     Each number corresponds to a layer in ResNet architecture, see Table in the paper: https://arxiv.org/pdf/1512.03385.pdf
     
     '''
-    def __init__(self, num_classes=5, pretrained=True, net_size=50,
+    def __init__(self, num_classes=5, pretrained=False, net_size=50,
                  freeze_features=False, freeze_until_layer=5):
-        super(TLNet, self).__init__()
+        super(DRNet, self).__init__()
         
         if(net_size == 18):
             self.resnet = resnet18(pretrained=pretrained)
@@ -29,7 +29,7 @@ class TLNet(nn.Module):
         elif (net_size == 50):
             self.resnet = resnet50(pretrained=pretrained)
         else:
-            print("Error in TLNet: Invalid model size for ResNet. Initializeing a ResNet 50 instead.")
+            print("Error in DRNet: Invalid model size for ResNet. Initializeing a ResNet 50 instead.")
             net_size = 50
             self.resnet = resnet50(pretrained=pretrained)
         
@@ -41,9 +41,9 @@ class TLNet(nn.Module):
                  self.resnet.avgpool,
                  self.resnet.fc]
         
-        if (freeze_features):
+        if (freeze_features & pretrained):
             if (freeze_until_layer < 1 | freeze_until_layer > 5):
-                print("Error in TLNet: Freezing layers not possible. Cannot freeze parameters until the given layer.")
+                print("Error in DRNet: Freezing layers not possible. Cannot freeze parameters until the given layer.")
             else:
                 for layer in layers[0:freeze_until_layer+3]:
                     for param in layer.parameters():
@@ -53,7 +53,7 @@ class TLNet(nn.Module):
         num_features = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_features, num_classes)
                 
-        self.set_name("TLNet(ResNet "+str(net_size)+")")
+        self.set_name("DRNet(ResNet "+str(net_size)+")")
         
         
     def set_name(self, name):
