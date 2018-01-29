@@ -108,3 +108,5 @@ data/train_small
 models
 data/test_small_300
 data/train_small_300
+generated
+results
