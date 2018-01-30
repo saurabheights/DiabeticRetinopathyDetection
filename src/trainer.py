@@ -19,8 +19,10 @@ class ModelTrainer:
 
     def __init__(self, model, train_dataset_loader, valid_dataset_loader, test_dataset_loader,
                  model_path,
+                 scheduler,
                  host_device='cpu',
-                 optimizer=torch.optim.Adam, optimizer_args={},
+                 optimizer=torch.optim.Adam,
+                 optimizer_args={},                 
                  loss_func=torch.nn.CrossEntropyLoss(size_average=False),
                  patience=float('Inf')):
         self.model = model
@@ -33,6 +35,7 @@ class ModelTrainer:
         self.host_device = host_device
         self.optimizer_args = optimizer_args
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.loss_func = loss_func
 
         self._reset_histories()
@@ -52,11 +55,8 @@ class ModelTrainer:
 
     def train_model(self, num_epochs, log_nth):
         training_start_time = time.time()
-        
-        # Pass only the trainable parameters to the optimizer, otherwise pyTorch throws an error
-        # relevant to Transfer learning with fixed features
-        
-        optimizer = self.optimizer(filter(lambda p: p.requires_grad, self.model.parameters()), **self.optimizer_args)
+
+        optimizer = self.optimizer
         
         self._reset_histories()
         if self.host_device == 'gpu':
@@ -72,6 +72,12 @@ class ModelTrainer:
             all_y = []
             all_y_pred = []            
             
+            # scheduler step for exp and step schedulers
+            
+            if (not isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau)):
+                self.scheduler.step()
+                print(self.scheduler.get_lr())
+                
             for i_batch, batch in enumerate(self.train_dataset_loader):
                 x, y = batch
                 x, y = Variable(x), Variable(y)
@@ -136,6 +142,12 @@ class ModelTrainer:
             training_time = time.time() - training_start_time
             logging.info(f"Epoch {i_epoch+1} - Training Time - {training_time} seconds")
 
+            
+            # scheduler step for plateau scheduler
+            
+            if (isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau)):
+                self.scheduler.step(running_loss)            
+            
             if val_qwk > self.best_qwk:
                 logging.info(f'New best validation QWK score: {val_qwk}')
                 self.best_qwk = val_qwk
