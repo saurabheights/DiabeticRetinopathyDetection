@@ -69,6 +69,7 @@ class LabelBalancer:
             row_n.append(len(curr_column_pos))
             logging.info(f'Found {len(curr_column_pos)} samples for category {i}')
         return row_pos, row_n
+
     def rebalance_categorical_train_idxs_pos_neg(self, rebalance=0.5, num_classes=5, rand_state=None):
         """Get training indices based on @y
             @rebalance: bool or fraction of positive examples desired
@@ -99,6 +100,20 @@ class LabelBalancer:
         min_n = min(row_n)
         for i in range(num_classes):
             row_pos[i] = rs.choice(row_pos[i], size=min_n, replace=False)
+        idxs = np.concatenate(row_pos)
+        rs.shuffle(idxs)
+        return idxs
+
+    def rebalance_categorical_train_idxs_almost_evenly(self, num_classes=5, rand_state=None):
+        """Get training indices based on @y
+            @rebalance: bool or fraction of positive examples desired
+                        If True, default fraction is 0.5. If False no balancing.
+        """
+        rs = np.random if rand_state is None else rand_state
+        row_pos, row_n = self._get_row_counts(num_classes)
+        min_n = min(row_n)
+        for i in range(num_classes):
+            row_pos[i] = rs.choice(row_pos[i], size=min(min_n, min_n * 1.5), replace=False)
         idxs = np.concatenate(row_pos)
         rs.shuffle(idxs)
         return idxs
@@ -159,11 +174,13 @@ def get_train_valid_loader(data_dir,
 
     train_idx, valid_idx = indices[split:], indices[:split]
 
-    if rebalance_strategy in {'even', 'posneg'}:
+    if rebalance_strategy in {'almost_even', 'even', 'posneg'}:
         label_balancer = LabelBalancer(train_dataset.labels.values())
         logging.info(f'Train samples before rebalancing: {len(train_idx)}')
         if rebalance_strategy == 'even':
             train_idx = label_balancer.rebalance_categorical_train_idxs_evenly()
+        elif rebalance_strategy == 'almost_even':
+            train_idx = label_balancer.rebalance_categorical_train_idxs_almost_evenly()
         else:
             train_idx = label_balancer.rebalance_categorical_train_idxs_pos_neg()
         logging.info(f'Train samples after rebalancing: {len(train_idx)}')
