@@ -113,7 +113,7 @@ class LabelBalancer:
         row_pos, row_n = self._get_row_counts(num_classes)
         min_n = min(row_n)
         for i in range(num_classes):
-            row_pos[i] = rs.choice(row_pos[i], size=min(min_n, min_n * 1.5), replace=False)
+            row_pos[i] = rs.choice(row_pos[i], size=min(row_n[i], int(min_n * 1.5)), replace=False)
         idxs = np.concatenate(row_pos)
         rs.shuffle(idxs)
         return idxs
