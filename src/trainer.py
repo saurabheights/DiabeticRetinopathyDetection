@@ -76,7 +76,7 @@ class ModelTrainer:
             
             if (not isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau)):
                 self.scheduler.step()
-                print(self.scheduler.get_lr())
+                logging.info(f"Learning rate is {self.scheduler.get_lr()}")
                 
             for i_batch, batch in enumerate(self.train_dataset_loader):
                 x, y = batch
