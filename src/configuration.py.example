@@ -6,6 +6,7 @@ from random import uniform
 from PIL import Image
 from torchvision import transforms
 from torchvision.models import AlexNet
+from torch.optim import Adam, SGD
 
 data_params = {
     'train_path': '../data/train',
@@ -35,6 +36,33 @@ training_params = {
     'log_nth': 1
 }
 
+train_control = {
+    'optimizer' : Adam,             # Adam, SGD (we can add more)
+    'lr_scheduler_type': 'none',    # 'exp', 'step', 'plateau', 'none'
+
+    'step_scheduler_args' : {
+        'gamma' : 0.1,       # factor to decay learing rate (new_lr = gamma * lr)
+        'step_size': 3     # number of epochs to take a step of decay
+    },
+
+    'exp_scheduler_args' : {
+        'gamma' : 0.1       # factor to decay learing rate (new_lr = gamma * lr)
+    },
+
+    'plateau_scheduler_args' : {
+        'factor' : 0.2,      # factor to decay learing rate (new_lr = factor * lr)
+        'patience' : 3,     # number of epochs to wait as monitored value does not change before decreasing LR
+        'verbose' : True,    # print a message when LR is changed
+        'threshold' : 1e-3,  # when to consider the monitored varaible not changing (focus on significant changes)
+        'min_lr' : 1e-7,     # lower bound on learning rate, not decreased further
+        'cooldown' : 0       # number of epochs to wait before resuming operation after LR was reduced
+    }
+}
+
+optimizer_params = {
+    'lr': 1e-3
+}
+
 model_params = {
     # if False, just load the model from the disk and evaluate
     'train': True,
@@ -47,10 +75,6 @@ model_params = {
     'pytorch_device': 'cpu',
     # cuda device if gpu
     'cuda_device': 0,
-}
-
-optimizer_params = {
-    'lr': 1e-3
 }
 
 # training data transforms (random rotation, random skew, scale and crop 224)
