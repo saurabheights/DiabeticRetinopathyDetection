@@ -146,7 +146,8 @@ class ModelTrainer:
             # scheduler step for plateau scheduler
             
             if (isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau)):
-                self.scheduler.step(running_loss)            
+                self.scheduler.step(running_loss)
+                logging.info(f"Learning rate is {self.scheduler.get_lr()}")
             
             if val_qwk > self.best_qwk:
                 logging.info(f'New best validation QWK score: {val_qwk}')
