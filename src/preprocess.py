@@ -7,9 +7,11 @@
 
 import cv2
 import numpy as np
-from os.path import join, exists
+from os.path import join, exists, basename
 from os import listdir, makedirs
 import sys
+import logging
+from datetime import datetime
 
 
 # function to scale the given image based on a scale value for the radius
@@ -26,7 +28,14 @@ def scaleRadius(img,scale):
 #   (target_size) determines whether to resize the images after preprocessing to exact dimensions or not
 
 def preprocess(folder='sample', scales=[300], save_path_same=True, target_size=(0,0)):
-        
+    
+    file = basename(folder)
+    handlers = [logging.FileHandler(datetime.now().strftime(f"%Y-%m-%d_%H-%M-%S-{file}.log")),
+                logging.StreamHandler()]
+    
+    logging.basicConfig(format='%(message)s',
+                        level=logging.INFO, handlers=handlers)
+    
     for scale in scales:
         if (save_path_same):
             write_folder = folder+'_'+str(scale)
@@ -49,14 +58,14 @@ def preprocess(folder='sample', scales=[300], save_path_same=True, target_size=(
                     aa = cv2.resize(aa, target_size)
                 boo = cv2.imwrite(join(write_folder, f), aa)
 
-                print("Processed Image: ", f)
-                print("Save Location: ", join(write_folder, f))
-                print("Success: ", boo)
-                print("New Dimensions: ", aa.shape[0], " X ", aa.shape[1])
-                print("______________________________________________\n")
+                logging.info("Processed Image: "+ str(f))
+                logging.info("Save Location: "+ str(join(write_folder, f)))
+                logging.info("Success: "+str(boo))
+                logging.info("New Dimensions: "+str(aa.shape[0])+" X "+str(aa.shape[1]))
+                logging.info("______________________________________________\n")
                 
             except:
-                print("Could not process file: ", f)
+                logging.info("Could not process file: ", f)
                 
 
 if __name__ == "__main__":
