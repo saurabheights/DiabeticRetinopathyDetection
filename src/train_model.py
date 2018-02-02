@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     
     if model_params['train'] and model_params['train_from_scratch']:
-        model = model_params['model'](**model_params['model_kwargs'])
+        model = model_params['model'](**model_params['model_kwargs'], default_lr=optimizer_params['lr'])
     else:
         if model_params['pytorch_device'] == 'gpu':
             model = torch.load(model_params['model_path'])
@@ -60,7 +60,14 @@ if __name__ == '__main__':
     # Pass only the trainable parameters to the optimizer, otherwise pyTorch throws an error
     # relevant to Transfer learning with fixed features
         
-    optimizer = train_control['optimizer'](filter(lambda p: p.requires_grad, model.parameters()),
+    if (model_params['per_layer_rates']):
+        optimizer = train_control['optimizer']([
+                                                {'params': model.get_params_layer(i),
+                                                 'lr': model.get_lr_layer(i)} for i in range(1,7)
+                                               ],
+                                               **optimizer_params)
+    else:
+        optimizer = train_control['optimizer'](filter(lambda p: p.requires_grad, model.parameters()),
                                            **optimizer_params)
     
     

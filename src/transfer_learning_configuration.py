@@ -8,19 +8,20 @@ from PIL import Image
 from torchvision import transforms
 import torch.nn as nn
 from DRNet import DRNet
+from torch.optim import Adam, SGD
 
 
 data_params = {
     'train_path': '../data/train_300',
     'test_path': '../data/test',
     'label_path': '../data/trainLabels.csv',
-    'batch_size': 32,
+    'batch_size': 64,
     'submission_file': '../data/submission.csv',
     # 'even', 'posneg', None.
     # 'even': Same number of samples for each class
     # 'posneg': Same number of samples for class 0 and all other classes
     'rebalance_strategy': 'even',
-    'num_loading_workers': 4
+    'num_loading_workers': 8
 }
 
 kaggle_params = {
@@ -34,23 +35,56 @@ kaggle_params = {
 }
 
 training_params = {
-    'num_epochs': 25,
-    'log_nth': 25
+    'num_epochs': 50,
+    'log_nth': 10,
 }
+
+train_control = {
+    'optimizer' : Adam,             # Adam, SGD (we can add more)
+    'lr_scheduler_type': 'plateau',    # 'exp', 'step', 'plateau', 'none'
+    
+    'step_scheduler_args' : {
+        'gamma' : 0.1,       # factor to decay learing rate (new_lr = gamma * lr)
+        'step_size': 3     # number of epochs to take a step of decay
+    },
+
+    'exp_scheduler_args' : {
+        'gamma' : 0.1       # factor to decay learing rate (new_lr = gamma * lr)    
+    },
+
+    'plateau_scheduler_args' : {
+        'factor' : 0.1,      # factor to decay learing rate (new_lr = factor * lr)   
+        'patience' : 5,     # number of epochs to wait as monitored value does not change before decreasing LR 
+        'verbose' : True,    # print a message when LR is changed
+        'threshold' : 1e-3,  # when to consider the monitored varaible not changing (focus on significant changes)
+        'min_lr' : 1e-9,     # lower bound on learning rate, not decreased further
+        'cooldown' : 0       # number of epochs to wait before resuming operation after LR was reduced
+    }
+
+}
+
+optimizer_params = {
+    'lr': 1e-3
+}
+
+
 
 model_params = {
     # if False, just load the model from the disk and evaluate
     'train': True,
     # if False, previously (partially) trained model is further trained.
-    'train_from_scratch':False,
-    'model_path': '../models/DRNet_Test_18.model',
+    'train_from_scratch': True,
+    'model_path': '../models/DRNet_TL_varLR_adam_plateau.model',
     'model': DRNet,
+    'per_layer_rates' : True,   # if True, the array rates in model kwargs will be used
     'model_kwargs' : {
         'num_classes' : 5,
-        'pretrained' : True,       # load pre-trained weights on image-net
+        'pretrained' : True,        # load pre-trained weights on image-net
         'net_size' : 18,            # 18, 34, or 50
-        'freeze_features' : False,  # fixed feature extractor OR fine-tune
-        'freeze_until_layer' : 2    # if (freeze features) --> 1, 2, 3, 4, or 5 (check ResNet Paper)
+        'freeze_features' : False,   # fixed feature extractor OR fine-tune
+        'freeze_until_layer' : 2,    # 1, 2, 3, 4, or 5 (check ResNet Paper)
+        'rates' : [1e-5, 1e-4, 1e-3, 1e-3, 1e-3, 1e-3]                
+        # array for learning rates of DRNet, layers 1 to 5 ResNet, 6 fc classifier
     },
     # the device to put the variables on (cpu/gpu)
     'pytorch_device': 'gpu',
@@ -58,13 +92,17 @@ model_params = {
     'cuda_device': 0,
 }
 
-optimizer_params = {
-    'lr': 1e-4
-}
+
+
 
 # normalization recommended by PyTorch documentation
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+# only in case of transfer learning
+
+transfer_learn = model_params['model_kwargs']['pretrained']
+
+normalize_transfer_learning = transforms.Normalize(
+    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) if transfer_learn else transforms.Normalize(
+    mean=[0, 0, 0], std=[1, 1, 1])
 
 
 # training data transforms (random rotation, random skew, scale and crop 224)
@@ -74,7 +112,7 @@ train_data_transforms = transforms.Compose([
     transforms.RandomResizedCrop(300, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
     transforms.CenterCrop((224)),
     transforms.ToTensor(),
-    normalize
+    normalize_transfer_learning
 ])
 
 # validation data transforms (random rotation, random skew, scale and crop 224)
@@ -84,7 +122,7 @@ val_data_transforms = transforms.Compose([
     transforms.RandomResizedCrop(300, scale=(0.9, 1.1), ratio=(1,1)),               # scale +- 10%, resize to 300
     transforms.CenterCrop((224)),
     transforms.ToTensor(),
-    normalize
+    normalize_transfer_learning
 ])
 
 # test data transforms (random rotation)
@@ -93,7 +131,7 @@ test_data_transforms = transforms.Compose([
     transforms.RandomResizedCrop(300, scale=(1,1), ratio=(1,1)),                    # resize to 300
     transforms.CenterCrop((224)),
     transforms.ToTensor(),
-    normalize
+    normalize_transfer_learning
 ])
 
 
@@ -127,3 +165,4 @@ def skew_image(img, angle, inc_width=False):
         return img
     else:
         return img.crop((0, 0, width, height))
+
