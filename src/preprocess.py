@@ -1,9 +1,15 @@
+# Example Usage:
+# >> python preprocess.py SOURCE_PATH
+# target path is SOURCE_PATH+'_300'
+
+
 # Partially adopted from https://github.com/btgraham/SparseConvNet/blob/kaggle_Diabetic_Retinopathy_competition/Data/kaggleDiabeticRetinopathy/preprocessImages.py
 
 import cv2
 import numpy as np
 from os.path import join, exists
 from os import listdir, makedirs
+import sys
 
 
 # function to scale the given image based on a scale value for the radius
@@ -52,3 +58,12 @@ def preprocess(folder='sample', scales=[300], save_path_same=True, target_size=(
             except:
                 print("Could not process file: ", f)
                 
+
+if __name__ == "__main__":
+    source_path = sys.argv[1]
+    print("Reading Images from Directory: "+str(source_path))
+    preprocess(source_path)
+    print("DONE.")
+          
+    
+        
