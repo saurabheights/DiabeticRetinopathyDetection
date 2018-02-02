@@ -65,13 +65,14 @@ def preprocess(folder='sample', scales=[300], save_path_same=True, target_size=(
                 logging.info("______________________________________________\n")
                 
             except:
-                logging.info("Could not process file: ", f)
+                logging.info("Could not process file: "+str(f))
                 
 
 if __name__ == "__main__":
     source_path = sys.argv[1]
+    same_path = eval(sys.argv[2])
     print("Reading Images from Directory: "+str(source_path))
-    preprocess(source_path)
+    preprocess(source_path, save_path_same = same_path)
     print("DONE.")
           
     
