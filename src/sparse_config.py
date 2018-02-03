@@ -28,20 +28,20 @@ kaggle_params = {
     # Change auto submit to True, to submit from code.
     'auto_submit':False,
     # Change to your Kaggle username and password.
-    'kaggle_username':'abc',
-    'kaggle_password':'xyz',
+    'kaggle_username':'darkhunt3r',
+    'kaggle_password':'majuleKE899497',
     # Keep message enclosed in single qoutes, which are further enclosed in double qoutes.
     'kaggle_submission_message':"'Luke, I am you father'"
 }
 
 training_params = {
-    'num_epochs': 20,
+    'num_epochs': 200,
     'log_nth': 25,
 }
 
 train_control = {
-    'optimizer' : SGD,             # Adam, SGD (we can add more)
-    'lr_scheduler_type': 'plateau',    # 'exp', 'step', 'plateau', 'none'
+    'optimizer' : Adam,             # Adam, SGD (we can add more)
+    'lr_scheduler_type': 'none',    # 'exp', 'step', 'plateau', 'none'
     
     'step_scheduler_args' : {
         'gamma' : 0.1,       # factor to decay learing rate (new_lr = gamma * lr)
@@ -74,7 +74,7 @@ model_params = {
     'train': True,
     # if False, previously (partially) trained model is further trained.
     'train_from_scratch': True,
-    'model_path': '../models/TLNet_test_sch.model',
+    'model_path': '../models/Sparse_ResNet.model',
     'model': Sparse_Res_Net,
     'model_kwargs' : {
         'num_classes' : 5,

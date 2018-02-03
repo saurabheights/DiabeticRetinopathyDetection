@@ -14,21 +14,22 @@ class Sparse_Res_Net(nn.Module):
     def __init__(self,num_classes = 5):
         nn.Module.__init__(self)
         self.sparseModel=scn.Sequential(
-        ).add(scn.DenseToSparse(3)).add(scn.ValidConvolution(3, 3, 8, 3, False)
-        ).add(scn.MaxPooling(3, 3, 2)
-        ).add(scn.SparseResNet(3, 8, [
-            ['b', 8, 2, 1],
+        ).add(scn.DenseToSparse(2)).add(scn.ValidConvolution(2, 3, 8, 2, False)
+        ).add(scn.MaxPooling(2, 4, 2)
+        ).add(scn.SparseResNet(2, 8, [
+            ['b', 8, 3, 1],
             ['b', 16, 2, 2],
             ['b', 24, 2, 2],
             ['b', 32, 2, 2]])
-        ).add(scn.Convolution(3, 32, 64, 5, 1, False)
+        ).add(scn.Convolution(2, 32, 64, 4, 1, False)
         ).add(scn.BatchNormReLU(64)
-        ).add(scn.SparseToDense(3,64))
-        self.linear = nn.Linear(64, num_classes)
+        ).add(scn.SparseToDense(2,64))
+        self.linear = nn.Linear(6400, num_classes)
     def forward(self, x):
-        #print(self.sparseModel.input_spatial_site(torch.LongTensor([1,1]))) 
         x = self.sparseModel(x)
-        x = x.view(-1,64)
+        #print("before linear") 
+        #print(type(x)) 
+        x = x.view(-1,6400)
         x = self.linear(x)
         return x
 '''
