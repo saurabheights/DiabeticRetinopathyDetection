@@ -69,6 +69,8 @@ class ModelTrainer:
         for i_epoch in range(num_epochs):
             logging.info("Starting new epoch...")
             running_loss = 0.
+            val_loss_scheduler = 5
+            
             all_y = []
             all_y_pred = []            
             
@@ -144,9 +146,9 @@ class ModelTrainer:
 
             
             # scheduler step for plateau scheduler
-            
+            val_loss_scheduler = running_loss
             if (isinstance(self.scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau)):
-                self.scheduler.step(running_loss)
+                self.scheduler.step(val_loss_scheduler)
             
             if val_qwk > self.best_qwk:
                 logging.info(f'New best validation QWK score: {val_qwk}')
