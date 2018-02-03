@@ -66,10 +66,11 @@ class ModelTrainer:
         logging.info(f"Size of training data: "
                      f"{len(self.train_dataset_loader.sampler) * self.train_dataset_loader.batch_size}")
         
+        
         for i_epoch in range(num_epochs):
             logging.info("Starting new epoch...")
             running_loss = 0.
-            val_loss_scheduler = 5
+            
             
             all_y = []
             all_y_pred = []            
