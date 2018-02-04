@@ -77,9 +77,10 @@ def plotGraphOfMultipleLogFiles(logFileLabels, yValues, xLabel="Epoch", yLabel="
     for label in logfile_graph_labels:
         numEpochs = len(yValues[label])
         epochList = list(range(1,numEpochs+1))
-        plt.plot(epochList, yValues[label])
+        plt.plot(epochList, yValues[label], label=label)
         plt.xlabel(xLabel)
         plt.ylabel(yLabel)
+        plt.legend()
 
 plotGraphOfMultipleLogFiles(logfile_graph_labels, ALL_TRAIN_LOSS, xLabel="Epoch", yLabel="Training Loss")
 plotGraphOfMultipleLogFiles(logfile_graph_labels, ALL_VAL_LOSS, xLabel="Epoch", yLabel="Validation Loss")
