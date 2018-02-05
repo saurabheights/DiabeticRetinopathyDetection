@@ -14,7 +14,10 @@ import numpy as np
 import torch
 from torch.optim import SGD
 
+from DRNet import DRNet
 from visualization.misc_functions import preprocess_image, recreate_image
+
+from torchvision.models.resnet import Bottleneck
 
 
 class CNNLayerVisualization():
@@ -52,6 +55,10 @@ class CNNLayerVisualization():
                             and self.selected_layer[2] == 'conv2':
                         layer_module.conv2.register_forward_hook(hook_function)
                         break
+                    if module_name == self.selected_layer[0] and layer_module_name == self.selected_layer[1] \
+                            and self.selected_layer[2] == 'conv3':
+                        layer_module.conv3.register_forward_hook(hook_function)
+                        break
             elif module_name != 'fc':
                 if self.selected_layer == 'conv1' == module_name:
                     module.register_forward_hook(hook_function)
@@ -69,7 +76,12 @@ class CNNLayerVisualization():
             optimizer.zero_grad()
             # Assign create image to a variable to move forward in the model
             x = self.processed_image
+
+            found_x = False
+            self.model(x)
             for module_name, module in self.model._modules.items():
+                if found_x:
+                    break
                 if module_name.startswith('layer'):
                     for layer_module_name, layer_module in module._modules.items():
                         residual = x
@@ -77,6 +89,7 @@ class CNNLayerVisualization():
                         if module_name == self.selected_layer[0] and layer_module_name == self.selected_layer[1] \
                                 and self.selected_layer[2] == 'conv1':
                             x = out
+                            found_x = True
                             break
                         out = layer_module.bn1(out)
                         out = layer_module.relu(out)
@@ -85,8 +98,20 @@ class CNNLayerVisualization():
                         if module_name == self.selected_layer[0] and layer_module_name == self.selected_layer[1] \
                                 and self.selected_layer[2] == 'conv2':
                             x = out
+                            found_x = True
                             break
                         out = layer_module.bn2(out)
+
+                        if type(layer_module) == Bottleneck:
+                            out = layer_module.relu(out)
+
+                            out = layer_module.conv3(out)
+                            if module_name == self.selected_layer[0] and layer_module_name == self.selected_layer[1] \
+                                    and self.selected_layer[2] == 'conv3':
+                                x = out
+                                found_x = True
+                                break
+                            out = layer_module.bn3(out)
 
                         if layer_module.downsample is not None:
                             residual = layer_module.downsample(x)
@@ -109,8 +134,8 @@ class CNNLayerVisualization():
             # Recreate image
             self.created_image = recreate_image(self.processed_image)
             # Save image
-            if i % 5 == 0:
-                cv2.imwrite('../../generated/layer_vis_l' + str(self.selected_layer) +
+            if i % 50 == 0:
+                cv2.imwrite('../../generated/resnet18_ft/layer_vis_l' + str(self.selected_layer) +
                             '_f' + str(self.selected_filter) + '_iter' + str(i) + '.jpg',
                             self.created_image)
 
@@ -149,6 +174,17 @@ class CNNLayerVisualization():
                             break
                         out = layer_module.bn2(out)
 
+                        if type(layer_module) == Bottleneck:
+                            out = layer_module.relu(out)
+
+                            out = layer_module.conv3(out)
+                            if module_name == self.selected_layer[0] and layer_module_name == self.selected_layer[1] \
+                                    and self.selected_layer[2] == 'conv3':
+                                x = out
+                                found_x = True
+                                break
+                            out = layer_module.bn3(out)
+
                         if layer_module.downsample is not None:
                             residual = layer_module.downsample(x)
 
@@ -177,7 +213,7 @@ class CNNLayerVisualization():
             # Recreate image
             self.created_image = recreate_image(self.processed_image)
             # Save image
-            if i % 5 == 0:
+            if i % 50 == 0:
                 cv2.imwrite('../../generated/layer_vis_l' + str(self.selected_layer) +
                             '_f' + str(self.selected_filter) + '_iter' + str(i) + '.jpg',
                             self.created_image)
@@ -185,17 +221,25 @@ class CNNLayerVisualization():
 
 if __name__ == '__main__':
     # Set to 'conv1', ('layer1', '0', 'conv1'), ('layer1', '0', 'conv2'),...
-    cnn_layer = 'conv1'
-    # Set to the number of the filter in the selectec conv layer
-    filter_pos = 0
+    # ResNet18 and 34 have up to conv2, ResNet50 has conv3
+    for cnn_layer in [
+        'conv1',
+        ('layer1', '0', 'conv1'), ('layer2', '1', 'conv2'), ('layer3', '0', 'conv1'),
+                      # ('layer4', '2', 'conv3')
+                          ('layer3', '1', 'conv2')
+    ]:
+        # Set to the number of the filter in the selectec conv layer
+        for filter_pos in [0, 1, 2, 30]:
+            pretrained_model = torch.load('../../models/DRNet_TL_18_Finetune_adam_plateau.model', lambda storage, loc: storage)
+            if type(pretrained_model) == DRNet:
+                pretrained_model = pretrained_model.resnet
 
-    pretrained_model = torch.load('../../models/resnet18.model', lambda storage, loc: storage)
+            layer_vis = CNNLayerVisualization(pretrained_model, cnn_layer, filter_pos)
 
-    layer_vis = CNNLayerVisualization(pretrained_model, cnn_layer, filter_pos)
+            # Either way use visualize_layer_with_hooks or visualise_layer_without_hooks, both work fine.
+            # Layer visualization with pytorch hooks
+            layer_vis.visualise_layer_with_hooks()
 
-    # Either way use visualize_layer_with_hooks or visualise_layer_without_hooks, both work fine.
-    # Layer visualization with pytorch hooks
-    layer_vis.visualise_layer_with_hooks()
-
-    # Layer visualization without pytorch hooks
-    # layer_vis.visualise_layer_without_hooks()
+            # Layer visualization without pytorch hooks
+            # layer_vis.visualise_layer_without_hooks()
+            print(f'Visualization done completed for {cnn_layer}, {filter_pos}')

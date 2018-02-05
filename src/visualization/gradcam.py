@@ -9,6 +9,7 @@ https://github.com/utkuozbulak/pytorch-cnn-visualizations/blob/master/src/gradca
 import cv2
 import numpy as np
 import torch
+from torchvision.models.resnet import Bottleneck
 
 from visualization.misc_functions import get_params, save_class_activation_on_image
 
@@ -48,6 +49,16 @@ class CamExtractor():
                         out.register_hook(self.save_gradient)
                         conv_output = out
                     out = layer_module.bn2(out)
+
+                    if type(layer_module) == Bottleneck:
+                        out = layer_module.relu(out)
+
+                        out = layer_module.conv3(out)
+                        if module_name == self.target_layer[0] and layer_module_name == self.target_layer[1] \
+                                and self.target_layer[2] == 'conv3':
+                            out.register_hook(self.save_gradient)
+                            conv_output = out
+                        out = layer_module.bn3(out)
 
                     if layer_module.downsample is not None:
                         residual = layer_module.downsample(x)
@@ -120,16 +131,20 @@ class GradCam():
 
 if __name__ == '__main__':
     # one for each class, you might adjust the paths in misc_functions#get_params
-    target_example = 1
-    (original_image, prep_img, target_class, file_name_to_export, pretrained_model) =\
-        get_params(target_example)
-    # Set to 'conv1', ('layer1', '0', 'conv1'), ('layer1', '0', 'conv2'),...
-    target_layer = ('layer3', '0', 'conv2')
-    # Grad cam
-    grad_cam = GradCam(pretrained_model, target_layer=target_layer)
-    # Generate cam mask
-    cam = grad_cam.generate_cam(prep_img, target_class)
-    # Save mask
-    file_name_to_export += f'_{str(target_layer)}'
-    save_class_activation_on_image(original_image, cam, file_name_to_export)
-    print('Grad cam completed')
+    for target_example in range(5):
+        (original_image, prep_img, target_class, file_name_to_export, pretrained_model) =\
+            get_params(target_example)
+        # Set to 'conv1', ('layer1', '0', 'conv1'), ('layer1', '0', 'conv2'),...
+        for target_layer in [
+            'conv1', ('layer1', '0', 'conv1'), ('layer2', '1', 'conv2'), ('layer3', '0', 'conv1'),
+                             # ('layer4', '1', 'conv2')
+                          ('layer4', '2', 'conv3')
+                             ]:
+            # Grad cam
+            grad_cam = GradCam(pretrained_model, target_layer=target_layer)
+            # Generate cam mask
+            cam = grad_cam.generate_cam(prep_img, target_class)
+            # Save mask
+            current_file_name_to_export = file_name_to_export + f'_{str(target_layer)}'
+            save_class_activation_on_image(original_image, cam, current_file_name_to_export)
+            print(f'Grad cam completed for {target_example}, {target_layer}')

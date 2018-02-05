@@ -13,6 +13,8 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
+from DRNet import DRNet
+
 
 def convert_to_grayscale(cv2im):
     """
@@ -180,7 +182,9 @@ def get_params(example_index):
     prep_img = preprocess_image(original_image)
     # Define model
     # pretrained_model = models.alexnet(pretrained=False)
-    pretrained_model = torch.load('../../models/resnet18.model', lambda storage, loc: storage)
+    pretrained_model = torch.load('../../models/DRNet_TL_50_ft_adam_plateau.model', lambda storage, loc: storage)
+    if type(pretrained_model) == DRNet:
+        pretrained_model = pretrained_model.resnet
     return (original_image,
             prep_img,
             target_class,

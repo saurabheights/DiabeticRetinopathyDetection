@@ -79,22 +79,23 @@ class GuidedBackprop():
 
 if __name__ == '__main__':
     # one for each class, you might adjust the paths in misc_functions#get_params
-    target_example = 4
-    (original_image, prep_img, target_class, file_name_to_export, pretrained_model) = \
-        get_params(target_example)
 
-    # Guided backprop
-    GBP = GuidedBackprop(pretrained_model, prep_img, target_class)
-    # Get gradients
-    guided_grads = GBP.generate_gradients()
-    # Save colored gradients
-    save_gradient_images(guided_grads, file_name_to_export + '_Guided_BP_color')
-    # Convert to grayscale
-    grayscale_guided_grads = convert_to_grayscale(guided_grads)
-    # Save grayscale gradients
-    save_gradient_images(grayscale_guided_grads, file_name_to_export + '_Guided_BP_gray')
-    # Positive and negative saliency maps
-    pos_sal, neg_sal = get_positive_negative_saliency(guided_grads)
-    save_gradient_images(pos_sal, file_name_to_export + '_pos_sal')
-    save_gradient_images(neg_sal, file_name_to_export + '_neg_sal')
-    print('Guided backprop completed')
+    for target_example in range(5):
+        (original_image, prep_img, target_class, file_name_to_export, pretrained_model) = \
+            get_params(target_example)
+
+        # Guided backprop
+        GBP = GuidedBackprop(pretrained_model, prep_img, target_class)
+        # Get gradients
+        guided_grads = GBP.generate_gradients()
+        # Save colored gradients
+        save_gradient_images(guided_grads, file_name_to_export + '_Guided_BP_color')
+        # Convert to grayscale
+        grayscale_guided_grads = convert_to_grayscale(guided_grads)
+        # Save grayscale gradients
+        save_gradient_images(grayscale_guided_grads, file_name_to_export + '_Guided_BP_gray')
+        # Positive and negative saliency maps
+        pos_sal, neg_sal = get_positive_negative_saliency(guided_grads)
+        save_gradient_images(pos_sal, file_name_to_export + '_pos_sal')
+        save_gradient_images(neg_sal, file_name_to_export + '_neg_sal')
+        print(f'Guided backprop completed for {target_example}')
