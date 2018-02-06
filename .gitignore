@@ -99,3 +99,14 @@ ENV/
 
 # mypy
 .mypy_cache/
+data/train
+data/test
+configuration.py
+submission.csv
+data/test_small
+data/train_small
+models
+data/test_small_300
+data/train_small_300
+generated
+results
